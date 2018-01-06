@@ -16,20 +16,16 @@ CONSTANT: index-query "index.php?i="
 CONSTANT: archive-path "archive.php"
 
 GENERIC: normalize-id ( object -- clean-id )
-ERROR: id-too-big ;
 
 DEFER: highest-id
 DEFER: (scrape-html)
 DEFER: (id-bounds-check)
 
-M: id-too-big summary
-  drop "id not less than or equal to highest" sprintf ;
-
 M: string normalize-id
-  string>number dup (id-bounds-check) ;
+  string>number (id-bounds-check) ;
 
 M: fixnum normalize-id
-  dup (id-bounds-check) ;
+  (id-bounds-check) ;
 
 M: latest normalize-id
   drop highest-id ;
@@ -43,8 +39,10 @@ M: random normalize-id
   [ from>> ] [ to>> ] [ seq>> ] tri
   subseq "." split1 drop string>number ;
 
-: (id-bounds-check) ( id -- )
-  highest-id < not [ id-too-big throw ] when ; inline
+: (id-bounds-check) ( id -- id )
+  abs [ highest-id ] dip 2dup <=
+  [ drop ]
+  [ nip ] if ;
 
 : (scrape-html) ( url -- page )
   http-get nip "<br>" "\n" replace parse-html ; inline
@@ -110,7 +108,7 @@ TYPED: (captchacomics-main) ( value: string -- )
   {
     { [ dup "latest" = ] [ drop latest-captchacomic. ] }
     { [ dup "random" = ] [ drop random-captchacomic. ] }
-    { [ dup string>number dup (id-bounds-check) ] [ captchacomic. ] }
+    { [ dup string>number (id-bounds-check) ] [ captchacomic. ] }
     [ drop random-captchacomic. ]
   } cond ;
 
