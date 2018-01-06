@@ -1,8 +1,8 @@
 USING: accessors assocs classes combinators.short-circuit
-formatting html.parser html.parser.analyzer http.client images
-images.http images.viewer kernel math math.order math.parser
-random.private sequences splitting strings summary ui
-ui.gadgets.scrollers ;
+command-line formatting html.parser html.parser.analyzer
+http.client images images.http images.viewer kernel math
+math.order math.parser namespaces random.private sequences
+splitting strings summary ui ui.gadgets.scrollers ;
 IN: captchacomics
 
 <PRIVATE
@@ -109,3 +109,16 @@ PRIVATE>
   highest-id 1 + random-integer captchacomic ;
 : random-captchacomic. ( -- )
   random-captchacomic display-comic ;
+
+: latest-captchacomic ( -- comic )
+  highest-id captchacomic ;
+: latest-captchacomic. ( -- )
+  highest-id captchacomic. ;
+
+: captchacomics-main ( -- )
+  [
+    (command-line) last string>number
+    [ captchacomic. ] [ random-captchacomic. ] if*
+  ] with-ui ;
+
+MAIN: captchacomics-main
