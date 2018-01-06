@@ -1,8 +1,9 @@
-USING: accessors assocs classes combinators.short-circuit
-command-line formatting html.parser html.parser.analyzer
-http.client images images.http images.viewer kernel math
-math.order math.parser namespaces random.private sequences
-splitting strings summary ui ui.gadgets.scrollers ;
+USING: accessors assocs classes combinators
+combinators.short-circuit command-line formatting html.parser
+html.parser.analyzer http.client images images.http
+images.viewer kernel math math.order math.parser namespaces
+random.private sequences splitting strings summary ui
+ui.gadgets.scrollers ;
 IN: captchacomics
 
 <PRIVATE
@@ -19,7 +20,7 @@ TUPLE: comic { data image } { name string } { id number } ;
 ERROR: id-too-big ;
 
 M: id-too-big summary
-  drop highest-id "id not less than or equal to highest %d" sprintf ;
+  drop "id not less than or equal to highest" sprintf ;
 
 : highest-id ( -- id )
   captchacomics-url archive-path append
@@ -36,16 +37,17 @@ M: id-too-big summary
   [ ] filter ! remove f
   0 [ max ] reduce ; ! highest
 
-: normalize-id ( string/number -- number )
-  ! only strings and integers are acceptable
-  dup class-of string = [
-    ! compute highest-id once and put it here
-    dup [ highest-id ] dip
-    "random" =
-    [ drop 1 + random-integer ] ! make a random number
-    [ over string>number <= [ id-too-big throw ] when ] ! range check and throw
-    if
-  ] when ;
+GENERIC: normalize-id ( object -- clean-id )
+
+M: string normalize-id
+  [ highest-id ] dip
+  dup "random" = not
+  [ string>number over < [ id-too-big throw ] when ]
+  [ 1 + random-integer ]
+  if* ;
+
+M: fixnum normalize-id
+  dup highest-id > [ id-too-big throw ] when ;
 
 : get-comic-image ( filename -- image )
   captchacomics-url prepend load-http-image ;
