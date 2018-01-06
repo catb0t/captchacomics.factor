@@ -1,9 +1,10 @@
 USING: accessors assocs classes combinators
 combinators.short-circuit command-line formatting html.parser
 html.parser.analyzer http.client images images.http
-images.viewer io kernel math math.order math.parser namespaces
-random.private regexp sequences splitting strings summary typed
-ui ui.gadgets.scrollers ;
+images.loader images.viewer io kernel math math.order
+math.parser math.ranges namespaces random.private regexp
+sequences splitting strings summary typed ui
+ui.gadgets.scrollers ;
 IN: captchacomics
 
 <PRIVATE
@@ -91,6 +92,17 @@ M: random normalize-id
   tri ": " glue open-window ;
 
 PRIVATE>
+
+DEFER: captchacomic
+
+: save-comic ( id -- )
+  captchacomic
+  [ data>> ] [ id>> ] bi
+  number>string ".png" append
+  save-graphic-image ;
+
+: save-all-comics ( -- )
+  highest-id [1,b] [ save-comic ] each ;
 
 : captchacomic ( id -- comic )
   id>comic ;
